@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { getDb } from "../mongo";
-import { predictions } from "../memory/predictions";
 
 const router = Router();
 
@@ -22,26 +21,6 @@ router.get("/", async (req, res) => {
 	console.log("GET /games - Returning all games data");
 	const games = await getDb().collection("games").find().toArray();
 	res.json({ games });
-});
-
-// POST /games/predict - Store a prediction in memory
-router.post("/predict", (req, res) => {
-	const { userId = "usr123", gameId, pick, amount } = req.body;
-
-	console.log(
-		`POST /games/predict - User: ${userId}, Game: ${gameId}, Pick: ${pick}, Amount: ${amount}`
-	);
-
-	if (!predictions[userId]) predictions[userId] = [];
-
-	predictions[userId].push({
-		gameId,
-		pick,
-		amount,
-		result: "pending",
-	});
-
-	res.status(200).json({ message: "Prediction received!" });
 });
 
 export default router;

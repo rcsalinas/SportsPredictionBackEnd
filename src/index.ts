@@ -6,6 +6,7 @@ import gamesData from "./data/games.json";
 import { connectInMemoryMongo, getDb } from "./mongo";
 import gamesRouter from "./routes/games";
 import { startGameSimulation } from "./simulation/gameSimulation";
+import predictionsRouter from "./routes/predictions";
 
 const app = express();
 const server = http.createServer(app);
@@ -18,6 +19,7 @@ const PORT = 4000;
 app.use(cors());
 app.use(express.json());
 app.use("/api/games", gamesRouter);
+app.use("/api/predictions", predictionsRouter);
 
 async function seedGames() {
 	const db = getDb();

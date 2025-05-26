@@ -33,6 +33,21 @@ export async function startGameSimulation(io: Server) {
 								: game.awayTeam.abbreviation;
 						delete tickCounts[game.id];
 						console.log(`Game ${game.id} finished.`);
+
+						// --- Update all predictions for this game in MongoDB ---
+						const predictions = await getDb()
+							.collection("predictions")
+							.find({ gameId: game.id, result: "pending" })
+							.toArray();
+
+						for (const p of predictions) {
+							const result = p.pick === game.winner ? "win" : "loss";
+							const payout = result === "win" ? p.amount * 1.9 : undefined;
+							await getDb()
+								.collection("predictions")
+								.updateOne({ _id: p._id }, { $set: { result, payout } });
+						}
+						// --- End update predictions ---
 					}
 				}
 
