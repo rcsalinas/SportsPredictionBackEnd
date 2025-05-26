@@ -1,10 +1,22 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
 import gamesData from "../data/games.json";
-import { predictions, Prediction } from "../memory/predictions";
+import { predictions } from "../memory/predictions";
 
 const router = Router();
 
-router.get("/", (req: Request, res: Response) => {
+router.get("/:id", (req, res) => {
+	console.log(`GET /games/${req.params.id} - Fetching game details`);
+	const gameId = req.params.id;
+	const game = gamesData.games.find((g: any) => g.id === gameId);
+
+	if (!game) {
+		return res.status(404).json({ message: "Game not found" });
+	}
+
+	return res.json(game);
+});
+
+router.get("/", (req, res) => {
 	console.log("GET /games - Returning all games data");
 	res.json(gamesData);
 });
