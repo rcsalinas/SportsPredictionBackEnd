@@ -11,6 +11,17 @@ router.post("/", async (req, res) => {
 		`POST /predictions - User: ${userId}, Game: ${gameId}, Pick: ${pick}, Amount: ${amount}`
 	);
 
+	// Check if the user already has a prediction for this game
+	const existing = await getDb()
+		.collection("predictions")
+		.findOne({ userId, gameId });
+
+	if (existing) {
+		return res
+			.status(400)
+			.json({ message: "You have already placed a prediction on this game." });
+	}
+
 	const prediction = {
 		userId,
 		gameId,
@@ -49,6 +60,25 @@ router.get("/", async (req, res) => {
 	}
 
 	return res.json({ predictions: userPredictions });
+});
+
+// DELETE /predictions/:id - Delete a prediction by its MongoDB _id
+router.delete("/:id", async (req, res) => {
+	const predictionId = req.params.id;
+
+	try {
+		const result = await getDb()
+			.collection("predictions")
+			.deleteOne({ _id: new (require("mongodb").ObjectId)(predictionId) });
+
+		if (result.deletedCount === 0) {
+			return res.status(404).json({ message: "Prediction not found." });
+		}
+
+		return res.status(200).json({ message: "Prediction deleted." });
+	} catch (err) {
+		return res.status(400).json({ message: "Invalid prediction ID." });
+	}
 });
 
 export default router;
