@@ -11,6 +11,17 @@ router.post("/", async (req, res) => {
 		`POST /predictions - User: ${userId}, Game: ${gameId}, Pick: ${pick}, Amount: ${amount}`
 	);
 
+	// Check if the game has already ended
+	const game = await getDb().collection("games").findOne({ id: gameId });
+	if (!game) {
+		return res.status(404).json({ message: "Game not found." });
+	}
+	if (game.status === "final") {
+		return res
+			.status(400)
+			.json({ message: "You cannot predict on a finished game." });
+	}
+
 	// Check if the user already has a prediction for this game
 	const existing = await getDb()
 		.collection("predictions")
