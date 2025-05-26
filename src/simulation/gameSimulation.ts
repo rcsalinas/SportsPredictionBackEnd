@@ -63,5 +63,5 @@ export async function startGameSimulation(io: Server) {
 			}
 		}
 		io.emit("gamesUpdate", await getDb().collection("games").find().toArray());
-	}, 1000); // 1 second per tick
+	}, 3000); // 1 second per tick
 }

@@ -5,10 +5,18 @@ const router = Router();
 
 // POST /predictions - Store a prediction in MongoDB
 router.post("/", async (req, res) => {
-	const { userId = "usr123", gameId, pick, amount } = req.body;
+	const {
+		userId = "usr123",
+		gameId,
+		pick,
+		amount,
+		homeTeam,
+		awayTeam,
+		startTime,
+	} = req.body;
 
 	console.log(
-		`POST /predictions - User: ${userId}, Game: ${gameId}, Pick: ${pick}, Amount: ${amount}`
+		`POST /predictions - User: ${userId}, Game: ${gameId}, Pick: ${pick}, Amount: ${amount}, Home Team: ${homeTeam}, Away Team: ${awayTeam}, Start Time: ${startTime}`
 	);
 
 	// Check if the game has already ended
@@ -39,6 +47,9 @@ router.post("/", async (req, res) => {
 		pick,
 		amount,
 		result: "pending",
+		homeTeam,
+		awayTeam,
+		startTime,
 	};
 
 	await getDb().collection("predictions").insertOne(prediction);
@@ -69,6 +80,8 @@ router.get("/", async (req, res) => {
 			.status(404)
 			.json({ message: "No predictions found for this user" });
 	}
+
+	console.log(userPredictions);
 
 	return res.json({ predictions: userPredictions });
 });
