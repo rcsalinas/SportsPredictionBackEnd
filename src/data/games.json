@@ -57,6 +57,124 @@
 				"score": 103
 			},
 			"winner": "MIA"
+		},
+		{
+			"id": "gm1004",
+			"status": "scheduled",
+			"startTime": "2025-05-26T20:00:00Z",
+			"homeTeam": {
+				"name": "Chicago Bulls",
+				"abbreviation": "CHI",
+				"record": "39-31"
+			},
+			"awayTeam": {
+				"name": "Houston Rockets",
+				"abbreviation": "HOU",
+				"record": "28-42"
+			},
+			"odds": {
+				"spread": "-5.0",
+				"favorite": "CHI"
+			}
+		},
+		{
+			"id": "gm1005",
+			"status": "inProgress",
+			"period": "2nd",
+			"clock": "4:12",
+			"homeTeam": {
+				"name": "Philadelphia 76ers",
+				"abbreviation": "PHI",
+				"record": "41-29",
+				"score": 54
+			},
+			"awayTeam": {
+				"name": "Toronto Raptors",
+				"abbreviation": "TOR",
+				"record": "33-37",
+				"score": 49
+			},
+			"odds": {
+				"spread": "-1.5",
+				"favorite": "PHI"
+			}
+		},
+		{
+			"id": "gm1006",
+			"status": "scheduled",
+			"startTime": "2025-05-27T19:30:00Z",
+			"homeTeam": {
+				"name": "San Antonio Spurs",
+				"abbreviation": "SAS",
+				"record": "25-45"
+			},
+			"awayTeam": {
+				"name": "Denver Nuggets",
+				"abbreviation": "DEN",
+				"record": "48-22"
+			},
+			"odds": {
+				"spread": "+8.0",
+				"favorite": "DEN"
+			}
+		},
+		{
+			"id": "gm1007",
+			"status": "final",
+			"homeTeam": {
+				"name": "Brooklyn Nets",
+				"abbreviation": "BKN",
+				"record": "34-36",
+				"score": 99
+			},
+			"awayTeam": {
+				"name": "Milwaukee Bucks",
+				"abbreviation": "MIL",
+				"record": "50-20",
+				"score": 108
+			},
+			"winner": "MIL"
+		},
+		{
+			"id": "gm1008",
+			"status": "inProgress",
+			"period": "4th",
+			"clock": "2:55",
+			"homeTeam": {
+				"name": "Phoenix Suns",
+				"abbreviation": "PHX",
+				"record": "44-26",
+				"score": 102
+			},
+			"awayTeam": {
+				"name": "Utah Jazz",
+				"abbreviation": "UTA",
+				"record": "37-33",
+				"score": 98
+			},
+			"odds": {
+				"spread": "-4.0",
+				"favorite": "PHX"
+			}
+		},
+		{
+			"id": "gm1009",
+			"status": "scheduled",
+			"startTime": "2025-05-28T21:00:00Z",
+			"homeTeam": {
+				"name": "Portland Trail Blazers",
+				"abbreviation": "POR",
+				"record": "30-40"
+			},
+			"awayTeam": {
+				"name": "Oklahoma City Thunder",
+				"abbreviation": "OKC",
+				"record": "43-27"
+			},
+			"odds": {
+				"spread": "+6.5",
+				"favorite": "OKC"
+			}
 		}
 	]
 }
