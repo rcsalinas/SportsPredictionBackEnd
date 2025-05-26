@@ -2,9 +2,9 @@ import express from "express";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
-import gamesRouter from "./routes/games";
 import gamesData from "./data/games.json";
-import { predictions } from "./memory/predictions";
+import { connectInMemoryMongo, getDb } from "./mongo";
+import gamesRouter from "./routes/games";
 
 const app = express();
 const server = http.createServer(app);
@@ -18,79 +18,68 @@ app.use(cors());
 app.use(express.json());
 app.use("/api/games", gamesRouter);
 
-// WebSocket connection
-io.on("connection", (socket) => {
-	console.log("Client connected:", socket.id);
-
-	// Emit initial games data
-	socket.emit("gamesUpdate", gamesData.games);
-
-	socket.on("disconnect", () => {
-		console.log("Client disconnected:", socket.id);
-	});
-});
-
-const tickCounts: Record<string, number> = {};
-
-gamesData.games.forEach((game) => {
-	if (game.status === "inProgress") {
-		tickCounts[game.id] = 6; // simulate 1 minute updates x6 => ends after ~60 seconds
+async function seedGames() {
+	const db = getDb();
+	const gamesCollection = db.collection("games");
+	const count = await gamesCollection.countDocuments();
+	if (count === 0) {
+		await gamesCollection.insertMany(gamesData.games);
+		console.log("Seeded games collection.");
 	}
-});
+}
 
-setInterval(() => {
-	gamesData.games.forEach((game) => {
+connectInMemoryMongo().then(async () => {
+	await seedGames();
+
+	// Example: update game status and scores every 10 seconds
+	const tickCounts: Record<string, number> = {};
+	const games = await getDb().collection("games").find().toArray();
+	games.forEach((game: any) => {
 		if (game.status === "inProgress") {
-			const ticksLeft = tickCounts[game.id] ?? 0;
-
-			if (ticksLeft <= 0) {
-				// End the game
-				game.status = "final";
-
-				Object.entries(predictions).forEach(([userId, userPreds]) => {
-					userPreds.forEach((p) => {
-						if (p.gameId === game.id && p.result === "pending") {
-							p.result = p.pick === game.winner ? "win" : "loss";
-							if (p.result === "win") {
-								p.payout = p.amount * 1.9;
-							}
-						}
-					});
-				});
-
-				const homeScore = game.homeTeam.score ?? 0;
-				const awayScore = game.awayTeam.score ?? 0;
-
-				game.winner =
-					homeScore > awayScore
-						? game.homeTeam.abbreviation
-						: game.awayTeam.abbreviation;
-
-				delete tickCounts[game.id]; // Clean up
-				console.log(`Game ${game.id} finished.`);
-			} else {
-				// Simulate score update
-				game.homeTeam.score =
-					(game.homeTeam.score ?? 0) + Math.floor(Math.random() * 3);
-				game.awayTeam.score =
-					(game.awayTeam.score ?? 0) + Math.floor(Math.random() * 3);
-				game.clock = `${Math.floor(Math.random() * 10)}:${Math.floor(
-					Math.random() * 59
-				)
-					.toString()
-					.padStart(2, "0")}`;
-				game.period = "3rd"; // optional, static
-				tickCounts[game.id] = ticksLeft - 1;
-				console.log(
-					`Game ${game.id} updated, ticks left: ${tickCounts[game.id]}`
-				);
-			}
+			tickCounts[game.id] = 6;
 		}
 	});
 
-	io.emit("gamesUpdate", gamesData.games);
-}, 10000); // every 10 seconds
+	setInterval(async () => {
+		const games = await getDb().collection("games").find().toArray();
+		for (const game of games) {
+			if (game.status === "inProgress") {
+				const ticksLeft = tickCounts[game.id] ?? 0;
+				if (ticksLeft <= 0) {
+					game.status = "final";
+					const homeScore = game.homeTeam.score ?? 0;
+					const awayScore = game.awayTeam.score ?? 0;
+					game.winner =
+						homeScore > awayScore
+							? game.homeTeam.abbreviation
+							: game.awayTeam.abbreviation;
+					delete tickCounts[game.id];
+					console.log(`Game ${game.id} finished.`);
+				} else {
+					game.homeTeam.score =
+						(game.homeTeam.score ?? 0) + Math.floor(Math.random() * 3);
+					game.awayTeam.score =
+						(game.awayTeam.score ?? 0) + Math.floor(Math.random() * 3);
+					game.clock = `${Math.floor(Math.random() * 10)}:${Math.floor(
+						Math.random() * 59
+					)
+						.toString()
+						.padStart(2, "0")}`;
+					game.period = "3rd";
+					tickCounts[game.id] = ticksLeft - 1;
+					console.log(
+						`Game ${game.id} updated, ticks left: ${tickCounts[game.id]}`
+					);
+				}
+				await getDb()
+					.collection("games")
+					.updateOne({ id: game.id }, { $set: game });
+			}
+		}
+		io.emit("gamesUpdate", await getDb().collection("games").find().toArray());
+	}, 10000);
 
-server.listen(PORT, () => {
-	console.log(`🚀 Server with WebSocket running at http://localhost:${PORT}`);
+	server.listen(PORT, () => {
+		console.log(`🚀 Server with WebSocket running at http://localhost:${PORT}`);
+	});
 });

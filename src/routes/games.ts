@@ -1,13 +1,14 @@
 import { Router } from "express";
-import gamesData from "../data/games.json";
+import { getDb } from "../mongo";
 import { predictions } from "../memory/predictions";
 
 const router = Router();
 
-router.get("/:id", (req, res) => {
+// GET /games/:id - Fetch a single game by ID from in-memory MongoDB
+router.get("/:id", async (req, res) => {
 	console.log(`GET /games/${req.params.id} - Fetching game details`);
 	const gameId = req.params.id;
-	const game = gamesData.games.find((g: any) => g.id === gameId);
+	const game = await getDb().collection("games").findOne({ id: gameId });
 
 	if (!game) {
 		return res.status(404).json({ message: "Game not found" });
@@ -16,11 +17,14 @@ router.get("/:id", (req, res) => {
 	return res.json(game);
 });
 
-router.get("/", (req, res) => {
+// GET /games - Return all games from in-memory MongoDB
+router.get("/", async (req, res) => {
 	console.log("GET /games - Returning all games data");
-	res.json(gamesData);
+	const games = await getDb().collection("games").find().toArray();
+	res.json({ games });
 });
 
+// POST /games/predict - Store a prediction in memory
 router.post("/predict", (req, res) => {
 	const { userId = "usr123", gameId, pick, amount } = req.body;
 
